@@ -80,7 +80,10 @@ def evaluate_conditions(conditions: list[schemas.Condition], obj: Any) -> bool:
     if not conditions:
         return True
 
-    return all(evaluate_condition(condition, obj) for condition in conditions)
+    for condition in conditions:
+        if not evaluate_condition(condition, obj):
+            return False
+    return True
 
 
 def evaluate_rule(rule: schemas.Rule, request: schemas.CheckRequest) -> bool:
