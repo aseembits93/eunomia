@@ -90,14 +90,16 @@ def evaluate_rule(rule: schemas.Rule, request: schemas.CheckRequest) -> bool:
         return False
 
     # Evaluate principal conditions
-    principal_match = evaluate_conditions(rule.principal_conditions, request.principal)
-    if not principal_match:
-        return False
+    if rule.principal_conditions:
+        for condition in rule.principal_conditions:
+            if not evaluate_condition(condition, request.principal):
+                return False
 
     # Evaluate resource conditions
-    resource_match = evaluate_conditions(rule.resource_conditions, request.resource)
-    if not resource_match:
-        return False
+    if rule.resource_conditions:
+        for condition in rule.resource_conditions:
+            if not evaluate_condition(condition, request.resource):
+                return False
 
     return True
 
