@@ -9,10 +9,10 @@ def get_attribute_value(obj: Any, path: str) -> Any:
     current = obj
 
     for component in components:
-        if hasattr(current, component):
-            current = getattr(current, component)
-        elif isinstance(current, dict) and component in current:
+        if isinstance(current, dict) and component in current:
             current = current[component]
+        elif hasattr(current, component):
+            current = getattr(current, component)
         elif (
             isinstance(current, list)
             and component.isdigit()
