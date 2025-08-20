@@ -9,21 +9,28 @@ def get_attribute_value(obj: Any, path: str) -> Any:
     current = obj
 
     for component in components:
-        if hasattr(current, component):
-            current = getattr(current, component)
-        elif isinstance(current, dict) and component in current:
-            current = current[component]
-        elif (
-            isinstance(current, list)
-            and component.isdigit()
-            and int(component) < len(current)
-        ):
-            current = current[int(component)]
-        else:
-            return None
-
         if current is None:
             return None
+            
+        if type(current) is dict:
+            if component in current:
+                current = current[component]
+            else:
+                return None
+        elif type(current) is list:
+            if component.isdigit():
+                idx = int(component)
+                if idx < len(current):
+                    current = current[idx]
+                else:
+                    return None
+            else:
+                return None
+        else:
+            if hasattr(current, component):
+                current = getattr(current, component)
+            else:
+                return None
 
     return current
 
