@@ -46,9 +46,10 @@ class Settings(BaseSettings):
         return self
 
 
-@lru_cache()
 def get_settings() -> Settings:
-    return Settings()
+    if not hasattr(get_settings, "_settings"):
+        get_settings._settings = Settings()
+    return get_settings._settings
 
 
 settings = get_settings()
