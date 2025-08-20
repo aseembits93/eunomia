@@ -77,9 +77,10 @@ class FetcherFactory:
 
     @classmethod
     def get_fetcher(cls, fetcher_id: str) -> BaseFetcher:
-        if fetcher_id not in cls._instances:
-            raise ValueError(f"Fetcher not initialized: {fetcher_id}")
-        return cls._instances[fetcher_id]
+        try:
+            return cls._instances[fetcher_id]
+        except KeyError:
+            raise ValueError(f"Fetcher not initialized: {fetcher_id}") from None
 
     @classmethod
     def get_all_fetchers(cls) -> Dict[str, BaseFetcher]:
