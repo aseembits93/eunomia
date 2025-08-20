@@ -42,12 +42,24 @@ class FetcherFactory:
 
     @classmethod
     def create_fetcher(cls, fetcher_id: str, config: BaseFetcherConfig) -> BaseFetcher:
-        if fetcher_id not in cls._registry:
+        # Avoid repeated dict lookups and attribute accesses for speed
+        try:
+            registry_entry = cls._registry[fetcher_id]
+        except KeyError:
             raise ValueError(f"Fetcher not registered: {fetcher_id}")
 
-        registry_entry = cls._registry[fetcher_id]
-        fetcher_config = registry_entry.config_cls.model_validate(config)
-        return registry_entry.fetcher_cls(fetcher_config)
+        # Cache attribute lookups to local variables
+        config_cls = registry_entry.config_cls
+        fetcher_cls = registry_entry.fetcher_cls
+
+        # model_validate could be slow; avoid redundant validations if config is already the right type
+        if type(config) is config_cls:
+            # Assume config is already validated if type matches exactly
+            fetcher_config = config
+        else:
+            fetcher_config = config_cls.model_validate(config)
+
+        return fetcher_cls(fetcher_config)
 
     @classmethod
     def initialize_fetchers(cls, fetcher_configs: dict[str, BaseFetcherConfig]) -> None:
