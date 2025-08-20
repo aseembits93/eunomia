@@ -85,18 +85,16 @@ def evaluate_conditions(conditions: list[schemas.Condition], obj: Any) -> bool:
 
 def evaluate_rule(rule: schemas.Rule, request: schemas.CheckRequest) -> bool:
     """Evaluate if a rule matches the check request."""
-    # Check action match
+    # Check action match first for early exit
     if request.action not in rule.actions:
         return False
 
     # Evaluate principal conditions
-    principal_match = evaluate_conditions(rule.principal_conditions, request.principal)
-    if not principal_match:
+    if not evaluate_conditions(rule.principal_conditions, request.principal):
         return False
 
     # Evaluate resource conditions
-    resource_match = evaluate_conditions(rule.resource_conditions, request.resource)
-    if not resource_match:
+    if not evaluate_conditions(rule.resource_conditions, request.resource):
         return False
 
     return True
@@ -106,13 +104,16 @@ def evaluate_policy(
     policy: schemas.Policy, request: schemas.CheckRequest
 ) -> schemas.PolicyEvaluationResult:
     """Evaluate a policy against a check request."""
+    result_ctor = schemas.PolicyEvaluationResult  # Local variable for faster access
+    policy_name = policy.name                    # Local variable in case policy.name is property
+
     for rule in policy.rules:
         if evaluate_rule(rule, request):
-            return schemas.PolicyEvaluationResult(
-                effect=rule.effect, matched_rule=rule, policy_name=policy.name
+            return result_ctor(
+                effect=rule.effect, matched_rule=rule, policy_name=policy_name
             )
 
     # If no rules matched, return the default effect
-    return schemas.PolicyEvaluationResult(
-        effect=policy.default_effect, matched_rule=None, policy_name=policy.name
+    return result_ctor(
+        effect=policy.default_effect, matched_rule=None, policy_name=policy_name
     )
