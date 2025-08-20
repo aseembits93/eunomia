@@ -10,11 +10,13 @@ from eunomia.engine.evaluator import evaluate_policy
 class PolicyEngine:
     def __init__(self):
         self._db_enabled = settings.ENGINE_SQL_DATABASE
-        self.policies: list[schemas.Policy] = []
 
+        # Avoid creating empty list unnecessarily if db is not enabled
         if self._db_enabled:
             db.init_db(settings.ENGINE_SQL_DATABASE_URL)
             self._load_policies()
+        else:
+            self.policies: list[schemas.Policy] = []
 
     def _load_policies(self) -> None:
         """Load policies from the database into memory."""
